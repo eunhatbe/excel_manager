@@ -9,9 +9,7 @@ from openpyxl.drawing.image import Image
 
 class ExcelManager():
     def __init__(self):
-        self.name_list = []
-        self.number_list1 = []
-        self.number_list2 = []
+        self.product_info_list = []
 
         self.base_url = None
         self.text_url = None
@@ -19,43 +17,37 @@ class ExcelManager():
 
         self.date = None
 
+        self.product_name1 = None
+        self.product_name2 = None
+        self.product_price1 = None
+        self.product_price2 = None
+
     def init_filepath(self, base_url, text_url, save_url):
         self.base_url = base_url
         self.text_url = text_url
         self.save_url = save_url
 
     def _check_path_exists(self):
-        if not self.base_url and self.text_url and self.save_url:
+        if not (self.base_url and self.text_url and self.save_url):
             return False
         return True
 
-    def _read_textfile(self):
+    def _read_datafile(self):
 
         if not self._check_path_exists():
             return
 
         self.image = Image(f'{self.base_url}/stamp.png')
 
-        try:
-            with open(f"{self.text_url}/name.txt", 'r', encoding="utf-8") as f:
-                file = f.read()
-                self.name_list = file.split("\n")
-        except Exception as e:
-            print(f"Error : {e}")
+        wb = openpyxl.load_workbook(f"{self.text_url}")
+        ws = wb.active
 
-        try:
-            with open(f"{self.text_url}/number1.txt", 'r') as f:
-                file = f.read()
-                self.number_list1 = file.split("\n")
-        except Exception as e:
-            print(f"Error : {e}")
-
-        try:
-            with open(f"{self.text_url}/number2.txt", 'r') as f:
-                file = f.read()
-                self.number_list2 = file.split("\n")
-        except Exception as e:
-            print(f"Error : {e}")
+        for i in range(2, ws.max_row + 1):
+            product_info = {}
+            product_info['name'] = ws[f'A{i}'].value
+            product_info['quantity'] = ws[f'D{i}'].value
+            product_info['delivery_count'] = int(ws[f'G{i}'].value / 5000)
+            self.product_info_list.append(product_info)
 
     def init_date(self, date):
         # 만약 날짜가 지정되지 않았다면 오늘 날짜로 초기화
@@ -65,22 +57,36 @@ class ExcelManager():
 
         self.date = date
 
+    def init_product(self,product_name1,product_price1,product_name2,product_price2):
+        self.product_name1 = product_name1
+        self.product_price1 = product_price1
+        self.product_name2 = product_name2
+        self.product_price2 = product_price2
+
     def run(self):
 
-        self._read_textfile()
+        self._read_datafile()
 
         # 워크북 생성
         wb = openpyxl.load_workbook(f"{self.base_url}/base.xlsx")
 
-        for i in range(len(self.name_list)):
+        for i in range(len(self.product_info_list)):
             ws = wb.active
 
-            # 품명
-            ws['B5'] = self.name_list[i]
+            # 업체명
+            ws['B5'] = self.product_info_list[i]['name']
 
             # 수량
-            ws['G14'] = self.number_list1[i]
-            ws['G15'] = self.number_list2[i]
+            ws['G14'] = self.product_info_list[i]['quantity']
+            ws['G15'] = self.product_info_list[i]['delivery_count']
+
+            # 품명
+            ws['C14'] = self.product_name1
+            ws['C15'] = self.product_name2
+
+            # 단가
+            ws['H14'] = self.product_price1
+            ws['H15'] = self.product_price2
 
             # 날짜
             ws['B3'] = self.date
@@ -101,4 +107,4 @@ class ExcelManager():
             target_cell_i26.value = '=SUM(j14:j15)'
             target_cell_b11.value = '=SUM(j14:j15)'
 
-            wb.save(f'{self.save_url}/{self.name_list[i]}{i}.xlsx')
+            wb.save(f'{self.save_url}/{self.product_info_list[i]["name"]}{i}.xlsx')
