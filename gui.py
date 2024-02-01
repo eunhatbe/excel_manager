@@ -1,8 +1,10 @@
 import sys
 
-from PyQt5.QtCore import QDate, pyqtSignal, QObject, pyqtSlot
+from PyQt5.QtCore import QDate, pyqtSignal, QObject, pyqtSlot, Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QDesktopWidget, QFileDialog, QPushButton, QVBoxLayout, QHBoxLayout, \
     QMessageBox, QLabel, QCalendarWidget, QLineEdit
+
+from excelmanager import ExcelManager
 
 
 class CalendarWindow(QWidget):
@@ -41,6 +43,8 @@ class App(QWidget):
         self.date_data = None
         self.calendar_window = None
 
+        self.excelmanager = ExcelManager()
+
         self.init_ui()
 
     def init_ui(self):
@@ -71,6 +75,7 @@ class App(QWidget):
         self.savepath_label = QLabel("", self)
 
         self.date_edit = QLineEdit(self)
+        self.date_edit.setAlignment(Qt.AlignCenter)
         self.date_edit.setFixedWidth(120)
         self.date_edit.setFixedHeight(30)
 
@@ -109,11 +114,12 @@ class App(QWidget):
         self.date_edit.move(180,20)
 
         # 버튼 이벤트 초기화
-        self.select_base_button.clicked.connect(lambda: self.open_file_dialog(self.basepath_label))
+        self.select_base_button.clicked.connect(lambda: self.open_directory_dialog("base", self.basepath_label))
         self.select_text_button.clicked.connect(lambda: self.open_directory_dialog("text", self.textpath_label))
         self.select_save_button.clicked.connect(lambda: self.open_directory_dialog("save", self.savepath_label))
 
         self.select_date_button.clicked.connect(self.select_date_event)
+        self.run_button.clicked.connect(self.run)
 
         self.center_window_onscreen()
         self.show()
@@ -128,27 +134,57 @@ class App(QWidget):
         folder_path = QFileDialog.getExistingDirectory(self)
         label.setText(folder_path)
 
-        if m_url == "text":
+        if m_url == "base":
+            self.base_url = folder_path
+        elif m_url == "text":
             self.text_url = folder_path
         elif m_url == "save":
             self.save_url = folder_path
 
-    def open_file_dialog(self, label: QLabel):
-        file_name = QFileDialog.getOpenFileName(self)
-        url = file_name[0]
-        label.setText(url)
+    # def open_file_dialog(self, label: QLabel):
+    #     file_name = QFileDialog.getOpenFileName(self)
+    #     url = file_name[0]
+    #     self.base_url = url
+    #     label.setText(url)
 
     def select_date_event(self):
         self.calendar_window = CalendarWindow()
-        self.calendar_window.send_date.connect(self.test_fun)
+        self.calendar_window.send_date.connect(self.get_date)
 
         self.calendar_window.show()
 
     @pyqtSlot(str)
-    def test_fun(self, date):
+    def get_date(self, date):
         self.date_data = date
         self.date_edit.setText(self.date_data)
         self.calendar_window.deleteLater()
+
+    def run(self):
+
+        if not self.base_url:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Error")
+            msg.setText("base파일 경로를 지정 해주세요")
+            msg.exec()
+            return
+
+        if not self.text_url:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Error")
+            msg.setText("text파일 경로를 지정 해주세요")
+            msg.exec()
+            return
+
+        if not self.save_url:
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Error")
+            msg.setText("저장 경로를 지정 해주세요")
+            msg.exec()
+            return
+
+        self.excelmanager.init_filepath(self.base_url,self.text_url,self.save_url)
+        self.excelmanager.init_date(self.date_data)
+        self.excelmanager.run()
 
 
 if __name__ == '__main__':
