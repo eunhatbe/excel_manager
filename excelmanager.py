@@ -97,10 +97,10 @@ class ExcelManager():
             ws['G14'].alignment = Alignment(horizontal='center', vertical='center')
             ws['G15'].alignment = Alignment(horizontal='center', vertical='center')
 
-            target_cell_j14 = wb['in']['j14']  # 공급가액
-            target_cell_j15 = wb['in']['j15']  # 공급가액
-            target_cell_i26 = wb['in']['i26']  # 합계
-            target_cell_b11 = wb['in']['b11']  # 합계
+            target_cell_j14 = ws['j14']  # 공급가액
+            target_cell_j15 = ws['j15']  # 공급가액
+            target_cell_i26 = ws['i26']  # 합계
+            target_cell_b11 = ws['b11']  # 합계
 
             target_cell_j14.value = '=G14*H14'
             target_cell_j15.value = '=G15*H15'
