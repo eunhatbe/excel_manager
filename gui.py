@@ -43,31 +43,32 @@ class App(QWidget):
         self.date_data = None
         self.calendar_window = None
 
+        self.product_info1 = None
+        self.product_info2 = None
+
         self.excelmanager = ExcelManager()
 
         self.init_ui()
 
     def init_ui(self):
         self.setWindowTitle('엑셀 자동화 프로그램')
-        self.resize(500, 250)
+        self.setFixedSize(600, 300)
 
         # 버튼 레이아웃
         self.select_base_button = QPushButton('&base path', self)
         self.select_text_button = QPushButton('&text path', self)
         self.select_save_button = QPushButton('&save path', self)
 
-        self.select_product_button = QPushButton('&품명/수량', self)
-        self.select_date_button = QPushButton('&날짜', self)
-        self.run_button = QPushButton('&실행', self)
+        self.select_date_button = QPushButton('&날짜 선택', self)
+        self.run_button = QPushButton('&실 행', self)
 
         # 버튼 사이즈
         self.select_base_button.setFixedWidth(100)
         self.select_text_button.setFixedWidth(100)
         self.select_save_button.setFixedWidth(100)
 
-        self.select_product_button.setFixedWidth(130)
-        self.select_date_button.setFixedWidth(130)
-        self.run_button.setFixedWidth(130)
+        self.select_date_button.setFixedWidth(100)
+        self.run_button.setFixedWidth(100)
 
         # label 초기화
         self.basepath_label = QLabel("", self)
@@ -79,8 +80,30 @@ class App(QWidget):
         self.date_edit.setFixedWidth(120)
         self.date_edit.setFixedHeight(30)
 
+        self.product_label1 = QLabel("품 명", self)
+        self.product_label2 = QLabel("품 명", self)
+
+        self.product_price_label1 = QLabel("단 가", self)
+        self.product_price_label2 = QLabel("단 가", self)
+
+        self.product_edit1 = QLineEdit(self)
+        self.product_edit1.setFixedWidth(120)
+        self.product_edit1.setFixedHeight(25)
+
+        self.product_edit2 = QLineEdit(self)
+        self.product_edit2.setFixedWidth(120)
+        self.product_edit2.setFixedHeight(25)
+
+        self.product_price_edit1 = QLineEdit(self)
+        self.product_price_edit1.setFixedWidth(120)
+        self.product_price_edit1.setFixedHeight(25)
+
+        self.product_price_edit2 = QLineEdit(self)
+        self.product_price_edit2.setFixedWidth(120)
+        self.product_price_edit2.setFixedHeight(25)
 
         # label, button layout
+
         hbox1 = QHBoxLayout()
         hbox1.addStretch(3)
         hbox1.addWidget(self.basepath_label)
@@ -99,23 +122,42 @@ class App(QWidget):
         hbox3.addStretch(4)
         hbox3.addWidget(self.select_save_button)
 
+        hbox4 = QHBoxLayout()
+        hbox4.addStretch(3)
+        hbox4.addWidget(self.select_date_button)
+
+        hbox5 = QHBoxLayout()
+        hbox5.addStretch(3)
+        hbox5.addWidget(self.run_button)
+
         vbox = QVBoxLayout()
         vbox.addStretch(1)
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
         vbox.addLayout(hbox3)
+        vbox.addLayout(hbox4)
+        vbox.addLayout(hbox5)
         vbox.addStretch(2)
         self.setLayout(vbox)
 
         # width, height
-        self.select_product_button.move(20, 200)
-        self.select_date_button.move(170, 200)
-        self.run_button.move(320, 200)
-        self.date_edit.move(180,20)
+        self.date_edit.move(470,20)
+
+        self.product_label1.move(22, 163)
+        self.product_edit1.move(60, 165)
+
+        self.product_label2.move(22, 203)
+        self.product_edit2.move(60, 205)
+
+        self.product_price_label1.move(190, 163)
+        self.product_price_edit1.move(225, 163)
+
+        self.product_price_label2.move(190, 205)
+        self.product_price_edit2.move(225, 205)
 
         # 버튼 이벤트 초기화
         self.select_base_button.clicked.connect(lambda: self.open_directory_dialog("base", self.basepath_label))
-        self.select_text_button.clicked.connect(lambda: self.open_directory_dialog("text", self.textpath_label))
+        self.select_text_button.clicked.connect(self.open_file_dialog)
         self.select_save_button.clicked.connect(lambda: self.open_directory_dialog("save", self.savepath_label))
 
         self.select_date_button.clicked.connect(self.select_date_event)
@@ -136,16 +178,14 @@ class App(QWidget):
 
         if m_url == "base":
             self.base_url = folder_path
-        elif m_url == "text":
-            self.text_url = folder_path
         elif m_url == "save":
             self.save_url = folder_path
 
-    # def open_file_dialog(self, label: QLabel):
-    #     file_name = QFileDialog.getOpenFileName(self)
-    #     url = file_name[0]
-    #     self.base_url = url
-    #     label.setText(url)
+    def open_file_dialog(self):
+        file_info = QFileDialog.getOpenFileName(self)
+        url = file_info[0]
+        self.textpath_label.setText(url)
+        self.text_url = url
 
     def select_date_event(self):
         self.calendar_window = CalendarWindow()
@@ -182,8 +222,14 @@ class App(QWidget):
             msg.exec()
             return
 
+        product_name1 = self.product_edit1.text()
+        product_name2 = self.product_edit2.text()
+        product_price1 = self.product_price_edit1.text()
+        product_price2 = self.product_price_edit2.text()
+
         self.excelmanager.init_filepath(self.base_url,self.text_url,self.save_url)
         self.excelmanager.init_date(self.date_data)
+        self.excelmanager.init_product(product_name1,product_price1,product_name2,product_price2)
         self.excelmanager.run()
 
 
