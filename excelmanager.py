@@ -9,7 +9,6 @@ from openpyxl.drawing.image import Image
 
 class ExcelManager():
     def __init__(self):
-        self.image = Image(f'base/stamp.png')
         self.name_list = []
         self.number_list1 = []
         self.number_list2 = []
