@@ -103,7 +103,6 @@ class App(QWidget):
         self.product_price_edit2.setFixedHeight(25)
 
         # label, button layout
-
         hbox1 = QHBoxLayout()
         hbox1.addStretch(3)
         hbox1.addWidget(self.basepath_label)
@@ -183,14 +182,12 @@ class App(QWidget):
 
     def open_file_dialog(self):
         file_info = QFileDialog.getOpenFileName(self)
-        url = file_info[0]
-        self.textpath_label.setText(url)
-        self.text_url = url
+        self.text_url = file_info[0]
+        self.textpath_label.setText(self.text_url)
 
     def select_date_event(self):
         self.calendar_window = CalendarWindow()
         self.calendar_window.send_date.connect(self.get_date)
-
         self.calendar_window.show()
 
     @pyqtSlot(str)
@@ -200,7 +197,6 @@ class App(QWidget):
         self.calendar_window.deleteLater()
 
     def run(self):
-
         if not self.base_url:
             msg = QMessageBox(self)
             msg.setWindowTitle("Error")
