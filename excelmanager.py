@@ -33,7 +33,6 @@ class ExcelManager():
         return True
 
     def _read_datafile(self):
-
         if not self._check_path_exists():
             return
 
@@ -54,7 +53,6 @@ class ExcelManager():
         if not date:
             self.date = datetime.today().strftime("%Y-%m-%d")
             return
-
         self.date = date
 
     def init_product(self,product_name1,product_price1,product_name2,product_price2):
@@ -64,9 +62,7 @@ class ExcelManager():
         self.product_price2 = product_price2
 
     def run(self):
-
         self._read_datafile()
-
         # 워크북 생성
         wb = openpyxl.load_workbook(f"{self.base_url}/base.xlsx")
 
